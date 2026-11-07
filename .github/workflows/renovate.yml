@@ -6,7 +6,7 @@
 # repository is what enrols it. A repository without a renovate.json gets an onboarding PR extending this preset.
 #
 # The App needs Contents, Pull requests, Issues, Workflows, Checks and Commit statuses read & write, plus Metadata,
-# Administration and Dependabot alerts read (Renovate docs, security-and-permissions). Its id and private key live in the RENOVATE_APP_ID and RENOVATE_APP_PRIVATE_KEY secrets of this
+# Administration and Dependabot alerts read (Renovate docs, security-and-permissions). Its Client ID and private key live in the RENOVATE_CLIENT_ID and RENOVATE_APP_PRIVATE_KEY secrets of this
 # repository.
 #
 # Every action and the Renovate image are pinned by full SHA / digest (this job holds the App private key and a
@@ -53,7 +53,7 @@ jobs:
         id: app-token
         uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         with:
-          app-id: ${{ secrets.RENOVATE_APP_ID }}
+          client-id: ${{ secrets.RENOVATE_CLIENT_ID }}
           private-key: ${{ secrets.RENOVATE_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
 
