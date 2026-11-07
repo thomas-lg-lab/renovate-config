@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "description": "This repository keeps its own workflow current (the Renovate action, create-github-app-token) through the shared preset it defines. No auto-merge: there is no CI here to gate it.",
-  "extends": ["local>thomas-lg/renovate-config"],
+  "extends": ["local>thomas-lg-lab/renovate-config"],
   "enabledManagers": ["github-actions"]
 }
