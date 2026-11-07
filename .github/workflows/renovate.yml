@@ -1,0 +1,69 @@
+# The one self-hosted Renovate runner of thomas-lg.
+#
+# It runs as the `thomas-lg-renovate` GitHub App (not GITHUB_TOKEN: pull requests opened with the workflow token
+# never trigger other workflows, so required checks would stay pending and nothing could merge). The App token only
+# sees the repositories the App is installed on, and autodiscover takes exactly those: installing the App on a
+# repository is what enrols it. A repository without a renovate.json gets an onboarding PR extending this preset.
+#
+# The App needs Contents, Pull requests, Issues and Workflows read & write, plus Checks, Commit statuses and
+# Metadata read. Its id and private key live in the RENOVATE_APP_ID and RENOVATE_APP_PRIVATE_KEY secrets of this
+# repository.
+#
+# The cron is daily so Dependency Dashboard checkboxes and rebases are picked up quickly; new update PRs are gated
+# to Monday mornings by the schedule in default.json. 01:00 UTC is 02:00 or 03:00 in Paris: three hours of margin
+# for GitHub's scheduled-run delays.
+name: Renovate
+
+on:
+  schedule:
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+    inputs:
+      dryRun:
+        description: "Dry run (no PR, no commit)"
+        type: boolean
+        default: false
+      logLevel:
+        description: "Log level"
+        type: choice
+        options: [info, debug]
+        default: info
+      repositories:
+        description: "Limit to these repositories (comma-separated owner/name), empty = every enrolled one"
+        type: string
+        default: ""
+
+concurrency:
+  group: renovate
+  cancel-in-progress: false
+
+jobs:
+  renovate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Mint an App installation token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.RENOVATE_APP_ID }}
+          private-key: ${{ secrets.RENOVATE_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Run Renovate
+        # This action publishes full versions only (no floating major tag); Renovate keeps the pin current.
+        uses: renovatebot/github-action@v46.3.12
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+        env:
+          RENOVATE_AUTODISCOVER: ${{ inputs.repositories == '' && 'true' || 'false' }}
+          RENOVATE_AUTODISCOVER_FILTER: "${{ github.repository_owner }}/*"
+          RENOVATE_REPOSITORIES: ${{ inputs.repositories }}
+          RENOVATE_ONBOARDING: "true"
+          RENOVATE_ONBOARDING_CONFIG: '{"$schema": "https://docs.renovatebot.com/renovate-schema.json", "extends": ["github>${{ github.repository }}"]}'
+          RENOVATE_REQUIRE_CONFIG: required
+          RENOVATE_PLATFORM_COMMIT: enabled
+          RENOVATE_DRY_RUN: ${{ inputs.dryRun && 'full' || '' }}
+          LOG_LEVEL: ${{ inputs.logLevel || 'info' }}
