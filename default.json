@@ -1,48 +1,105 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "Shared Renovate preset of thomas-lg (github>thomas-lg/renovate-config). Repositories extend it and add their managers, groups, ignores and auto-merge policy.",
-  "extends": ["config:recommended"],
-  "schedule": ["before 6am on monday"],
+  "description": "Shared Renovate preset of thomas-lg (github>thomas-lg/renovate-config), on config:best-practices (actions and images pinned by digest, config migration, pinned devDependencies, abandoned-package detection, weekly lock file maintenance, 3 days of release age on npm). Repositories extend it and add their managers, groups, ignores and auto-merge policy.",
+  "extends": [
+    "config:best-practices"
+  ],
+  "schedule": [
+    "before 6am on monday"
+  ],
   "timezone": "Europe/Paris",
   "prHourlyLimit": 0,
   "prConcurrentLimit": 10,
   "dependencyDashboard": true,
+  "osvVulnerabilityAlerts": true,
+  "vulnerabilityAlerts": {
+    "description": "Security fixes found in the OSV database (no GitHub setting needed): one PR per advisory, opened at once instead of waiting for Monday and without the release-age delay, labelled security, never merged without review.",
+    "schedule": [
+      "at any time"
+    ],
+    "addLabels": [
+      "security"
+    ],
+    "automerge": false,
+    "dependencyDashboardApproval": false,
+    "minimumReleaseAge": null
+  },
   "semanticCommits": "enabled",
   "semanticCommitType": "deps",
   "semanticCommitScope": "",
-  "labels": ["dependencies"],
+  "labels": [
+    "dependencies"
+  ],
   "rangeStrategy": "bump",
   "automergeType": "pr",
   "automergeStrategy": "squash",
   "platformAutomerge": true,
   "lockFileMaintenance": {
-    "schedule": ["before 6am on monday"],
+    "schedule": [
+      "before 6am on monday"
+    ],
     "automerge": false,
     "commitMessageAction": "refresh"
   },
   "packageRules": [
     {
-      "matchManagers": ["dockerfile", "docker-compose", "devcontainer", "pyenv", "nvm"],
-      "addLabels": ["docker"]
+      "matchManagers": [
+        "dockerfile",
+        "docker-compose",
+        "devcontainer",
+        "pyenv",
+        "nvm"
+      ],
+      "addLabels": [
+        "docker"
+      ]
     },
     {
-      "matchManagers": ["github-actions"],
-      "addLabels": ["github-actions"]
+      "matchManagers": [
+        "github-actions"
+      ],
+      "addLabels": [
+        "github-actions"
+      ]
     },
     {
       "description": "Every action bump edits the same few workflow files: one PR for minor and patch, one for majors, so they do not conflict with each other.",
-      "matchManagers": ["github-actions"],
-      "matchUpdateTypes": ["minor", "patch", "digest", "pinDigest"],
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "digest",
+        "pinDigest"
+      ],
       "groupName": "github-actions"
     },
     {
-      "matchManagers": ["github-actions"],
-      "matchUpdateTypes": ["major"],
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
       "groupName": "github-actions-major"
     },
     {
+      "description": "Supply-chain guard: a release must be three days old before it is proposed, long enough for a compromised or broken version to be pulled. npm gets it from config:best-practices; the other registries that publish release dates get it here. Security fixes skip it (vulnerabilityAlerts).",
+      "matchDatasources": [
+        "pypi",
+        "nuget",
+        "github-tags",
+        "github-releases",
+        "node-version"
+      ],
+      "minimumReleaseAge": "3 days"
+    },
+    {
       "description": "config:recommended types non-production dependencies as chore (:semanticPrefixFixDepsChoreOthers); every update is a dependency bump, so keep the deps prefix the PR title checks, labels and release notes expect. Kept last so it wins over the preset rules.",
-      "matchPackageNames": ["*"],
+      "matchPackageNames": [
+        "*"
+      ],
       "semanticCommitType": "deps"
     }
   ]
