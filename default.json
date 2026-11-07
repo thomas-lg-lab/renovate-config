@@ -85,7 +85,17 @@
       "groupName": "github-actions-major"
     },
     {
-      "description": "Supply-chain guard: a release must be three days old before it is proposed, long enough for a compromised or broken version to be pulled. npm gets it from config:best-practices; the other registries that publish release dates get it here. Security fixes skip it (vulnerabilityAlerts).",
+      "description": "A digest update of an action means its tag now points at another commit: the pattern of a hijacked action (tj-actions, trivy-action). Never auto-merged, whatever the repository allows for digests. A repository whose own rules enable digest auto-merge after this preset must repeat this rule after them.",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchUpdateTypes": [
+        "digest"
+      ],
+      "automerge": false
+    },
+    {
+      "description": "Supply-chain guard: a release must be three days old before it is proposed, long enough for a compromised or broken version to be pulled. npm gets it from config:best-practices; the other registries that publish release dates get it here. Security fixes skip it (vulnerabilityAlerts). Weak on github-tags: their dates are the commit or tagger date, which whoever pushes the tag can backdate, so it is no reason to auto-merge actions.",
       "matchDatasources": [
         "pypi",
         "nuget",
