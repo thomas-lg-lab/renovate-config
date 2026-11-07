@@ -1,8 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "Shared Renovate preset of thomas-lg (github>thomas-lg/renovate-config). Repositories extend it and add their managers, groups, ignores and auto-merge policy.",
+  "description": "Shared Renovate preset of thomas-lg (github>thomas-lg/renovate-config), on config:best-practices (actions and images pinned by digest, config migration, pinned devDependencies, abandoned-package detection, weekly lock file maintenance, 3 days of release age on npm). Repositories extend it and add their managers, groups, ignores and auto-merge policy.",
   "extends": [
-    "config:recommended"
+    "config:best-practices"
   ],
   "schedule": [
     "before 6am on monday"
@@ -13,7 +13,7 @@
   "dependencyDashboard": true,
   "osvVulnerabilityAlerts": true,
   "vulnerabilityAlerts": {
-    "description": "Security fixes found in the OSV database (no GitHub setting needed): one PR per advisory, opened at once instead of waiting for Monday, labelled security, never merged without review.",
+    "description": "Security fixes found in the OSV database (no GitHub setting needed): one PR per advisory, opened at once instead of waiting for Monday and without the release-age delay, labelled security, never merged without review.",
     "schedule": [
       "at any time"
     ],
@@ -21,7 +21,8 @@
       "security"
     ],
     "automerge": false,
-    "dependencyDashboardApproval": false
+    "dependencyDashboardApproval": false,
+    "minimumReleaseAge": null
   },
   "semanticCommits": "enabled",
   "semanticCommitType": "deps",
@@ -82,6 +83,17 @@
         "major"
       ],
       "groupName": "github-actions-major"
+    },
+    {
+      "description": "Supply-chain guard: a release must be three days old before it is proposed, long enough for a compromised or broken version to be pulled. npm gets it from config:best-practices; the other registries that publish release dates get it here. Security fixes skip it (vulnerabilityAlerts).",
+      "matchDatasources": [
+        "pypi",
+        "nuget",
+        "github-tags",
+        "github-releases",
+        "node-version"
+      ],
+      "minimumReleaseAge": "3 days"
     },
     {
       "description": "config:recommended types non-production dependencies as chore (:semanticPrefixFixDepsChoreOthers); every update is a dependency bump, so keep the deps prefix the PR title checks, labels and release notes expect. Kept last so it wins over the preset rules.",
