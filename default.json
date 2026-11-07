@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "Shared Renovate preset of thomas-lg (github>thomas-lg/renovate-config), on config:best-practices (actions and images pinned by digest, config migration, pinned devDependencies, abandoned-package detection, weekly lock file maintenance, 3 days of release age on npm). Repositories extend it and add their managers, groups, ignores and auto-merge policy.",
+  "description": "Shared Renovate preset of thomas-lg (github>thomas-lg-lab/renovate-config), on config:best-practices (actions and images pinned by digest, config migration, pinned devDependencies, abandoned-package detection, weekly lock file maintenance, 3 days of release age on npm). Repositories extend it and add their managers, groups, ignores and auto-merge policy.",
   "extends": [
     "config:best-practices"
   ],

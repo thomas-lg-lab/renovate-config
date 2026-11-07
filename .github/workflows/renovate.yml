@@ -1,4 +1,4 @@
-# The one self-hosted Renovate runner of thomas-lg.
+# The one self-hosted Renovate runner of thomas-lg-lab.
 #
 # It runs as the `thomas-lg-renovate` GitHub App (not GITHUB_TOKEN: pull requests opened with the workflow token
 # never trigger other workflows, so required checks would stay pending and nothing could merge). The App token only
