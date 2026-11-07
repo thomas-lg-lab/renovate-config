@@ -5,9 +5,12 @@
 # sees the repositories the App is installed on, and autodiscover takes exactly those: installing the App on a
 # repository is what enrols it. A repository without a renovate.json gets an onboarding PR extending this preset.
 #
-# The App needs Contents, Pull requests, Issues and Workflows read & write, plus Checks, Commit statuses and
-# Metadata read. Its id and private key live in the RENOVATE_APP_ID and RENOVATE_APP_PRIVATE_KEY secrets of this
+# The App needs Contents, Pull requests, Issues, Workflows, Checks and Commit statuses read & write, plus Metadata,
+# Administration and Dependabot alerts read (Renovate docs, security-and-permissions). Its id and private key live in the RENOVATE_APP_ID and RENOVATE_APP_PRIVATE_KEY secrets of this
 # repository.
+#
+# Every action and the Renovate image are pinned by full SHA / digest (this job holds the App private key and a
+# write token on every enrolled repository); Renovate keeps the pins and their version comments current.
 #
 # The cron is daily so Dependency Dashboard checkboxes and rebases are picked up quickly; new update PRs are gated
 # to Monday mornings by the schedule in default.json. 01:00 UTC is 02:00 or 03:00 in Paris: three hours of margin
@@ -40,22 +43,26 @@ concurrency:
 jobs:
   renovate:
     runs-on: ubuntu-latest
+    # Below the one-hour lifetime of the installation token.
+    timeout-minutes: 50
     permissions:
       contents: read
 
     steps:
       - name: Mint an App installation token
         id: app-token
-        uses: actions/create-github-app-token@v3
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         with:
           app-id: ${{ secrets.RENOVATE_APP_ID }}
           private-key: ${{ secrets.RENOVATE_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
 
       - name: Run Renovate
-        # This action publishes full versions only (no floating major tag); Renovate keeps the pin current.
-        uses: renovatebot/github-action@v46.3.12
+        uses: renovatebot/github-action@1c0cf989c02653fba0efe7ca5772338860ca71dc # v46.3.12
         with:
+          # Without it the action runs the floating ghcr.io/renovatebot/renovate:44. Renovate's github-actions manager
+          # reads this input and bumps tag and digest together.
+          renovate-image: ghcr.io/renovatebot/renovate:44.222.1@sha256:11492804bf7b54707c658c02f6b0f25fcf8448b5e13d4b549d4df7af04e285e4
           token: ${{ steps.app-token.outputs.token }}
         env:
           RENOVATE_AUTODISCOVER: ${{ inputs.repositories == '' && 'true' || 'false' }}
