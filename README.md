@@ -11,4 +11,4 @@ Shared Renovate preset and the single self-hosted Renovate runner of `thomas-lg-
 - Secrets of this repository: `RENOVATE_APP_ID`, `RENOVATE_APP_PRIVATE_KEY`.
 
 New update PRs open on Monday mornings (Europe/Paris); the daily run picks up Dependency Dashboard checkboxes and
-rebases. Documented in the homelab repository (`roadmap.md`, "Hermes handles the pending PRs").
+rebases.
