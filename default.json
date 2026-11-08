@@ -102,6 +102,17 @@
         "node-version"
       ],
       "minimumReleaseAge": "3 days"
+    },
+    {
+      "description": "The organisation's shared workflows (uses: thomas-lg-lab/.github/.github/workflows/<file>@<sha> # vX.Y.Z): proposed as soon as a release of thomas-lg-lab/.github is published (no release-age delay, the organisation publishes them), all callers of a repository in one PR. Kept last so it wins over the rule above.",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchPackageNames": [
+        "thomas-lg-lab/**"
+      ],
+      "minimumReleaseAge": null,
+      "groupName": "shared workflows"
     }
   ]
 }
