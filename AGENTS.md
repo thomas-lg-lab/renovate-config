@@ -7,4 +7,4 @@
 - **PR titles** are Conventional Commits (required `conventions / title` check); Renovate's own PRs use
   `fix(deps):` for production dependencies and `chore(deps):` for the rest. Issue forms, the PR template and how
   to fill them come from the organisation's `thomas-lg-lab/.github`.
-- Technical files are written in English.
+- Technical files are in English.
