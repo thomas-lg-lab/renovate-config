@@ -6,8 +6,10 @@
 # repository is what enrols it. A repository without a renovate.json gets an onboarding PR extending this preset.
 #
 # The App needs Contents, Pull requests, Issues, Workflows, Checks and Commit statuses read & write, plus Metadata,
-# Administration and Dependabot alerts read (Renovate docs, security-and-permissions). Its Client ID and private key live in the RENOVATE_CLIENT_ID and RENOVATE_APP_PRIVATE_KEY secrets of this
-# repository.
+# Administration and Dependabot alerts read (Renovate docs, "Running as a GitHub App"; the installation grants no
+# organisation permission, Members read included, and Renovate runs without it). The token minted below asks for exactly those: a token inherits every permission of the installation
+# otherwise, more than a compromised step here should hold. Its Client ID and private key live in the
+# RENOVATE_CLIENT_ID and RENOVATE_APP_PRIVATE_KEY secrets of this repository.
 #
 # Every action and the Renovate image are pinned by full SHA / digest (this job holds the App private key and a
 # write token on every enrolled repository); Renovate keeps the pins and their version comments current.
@@ -55,7 +57,17 @@ jobs:
         with:
           client-id: ${{ secrets.RENOVATE_CLIENT_ID }}
           private-key: ${{ secrets.RENOVATE_APP_PRIVATE_KEY }}
+          # Every repository of the installation (autodiscover), the permissions Renovate documents and nothing more.
           owner: ${{ github.repository_owner }}
+          permission-contents: write
+          permission-pull-requests: write
+          permission-issues: write
+          permission-workflows: write
+          permission-checks: write
+          permission-statuses: write
+          permission-metadata: read
+          permission-administration: read
+          permission-vulnerability-alerts: read
 
       - name: Run Renovate
         uses: renovatebot/github-action@1c0cf989c02653fba0efe7ca5772338860ca71dc # v46.3.12
