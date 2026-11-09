@@ -41,6 +41,13 @@
   },
   "packageRules": [
     {
+      "description": "bump above would rewrite a peerDependencies range (^22.0.0 -> ^22.2.4) that already admits the installed version, and the lockfile update then fails (coffee-tracker #235, #236). widen is Renovate's own default for peers: the range only grows when a release falls outside it.",
+      "matchDepTypes": [
+        "peerDependencies"
+      ],
+      "rangeStrategy": "widen"
+    },
+    {
       "matchManagers": [
         "dockerfile",
         "docker-compose",
