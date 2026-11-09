@@ -46,6 +46,10 @@
           {
             "context": "conventions / title",
             "integration_id": 15368
+          },
+          {
+            "context": "conventions / lint",
+            "integration_id": 15368
           }
         ]
       }
@@ -57,6 +61,11 @@
           {
             "tool": "CodeQL",
             "security_alerts_threshold": "high_or_higher",
+            "alerts_threshold": "errors"
+          },
+          {
+            "tool": "zizmor",
+            "security_alerts_threshold": "medium_or_higher",
             "alerts_threshold": "errors"
           }
         ]
