@@ -8,7 +8,7 @@ Shared Renovate preset and the single self-hosted Renovate runner of `thomas-lg-
   autodiscover. **Installing the App on a repository enrols it**; a repository without a `renovate.json` gets an
   onboarding PR extending this preset. Run it by hand from the Actions tab (dry run, log level, or a list of
   repositories).
-- Secrets of this repository: `RENOVATE_APP_ID`, `RENOVATE_APP_PRIVATE_KEY`.
+- Secrets of this repository: `RENOVATE_CLIENT_ID`, `RENOVATE_APP_PRIVATE_KEY`.
 
 New update PRs open on Monday mornings (Europe/Paris); the daily run picks up Dependency Dashboard checkboxes and
 rebases.
