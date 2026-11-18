@@ -17,6 +17,11 @@
 # The cron is daily so Dependency Dashboard checkboxes and rebases are picked up quickly; new update PRs are gated
 # to Monday mornings by the schedule in default.json. 01:00 UTC is 02:00 or 03:00 in Paris: three hours of margin
 # for GitHub's scheduled-run delays.
+#
+# Renovate merges a pull request itself (automerge with platformAutomerge off) on the run after the one that saw
+# its checks green, so one run never opens and merges. With `secondPass`, a dispatched run waits for the checks of
+# the Renovate pull requests of the listed repositories and runs again: an image published on main reaches its
+# deployment repository within minutes instead of two daily runs. The shared image workflow dispatches it that way.
 name: Renovate
 
 on:
@@ -37,6 +42,10 @@ on:
         description: "Limit to these repositories (comma-separated owner/name), empty = every enrolled one"
         type: string
         default: ""
+      secondPass:
+        description: "Wait for the checks of the Renovate pull requests of these repositories, then run again so they merge"
+        type: boolean
+        default: false
 
 concurrency:
   group: renovate
@@ -49,6 +58,17 @@ jobs:
     timeout-minutes: 50
     permissions:
       contents: read
+    # Renovate's settings, for both runs below (the action hands RENOVATE_* and LOG_LEVEL to its container).
+    env:
+      RENOVATE_AUTODISCOVER: ${{ inputs.repositories == '' && 'true' || 'false' }}
+      RENOVATE_AUTODISCOVER_FILTER: "${{ github.repository_owner }}/*"
+      RENOVATE_REPOSITORIES: ${{ inputs.repositories }}
+      RENOVATE_ONBOARDING: "true"
+      RENOVATE_ONBOARDING_CONFIG: '{"$schema": "https://docs.renovatebot.com/renovate-schema.json", "extends": ["github>${{ github.repository }}"]}'
+      RENOVATE_REQUIRE_CONFIG: required
+      RENOVATE_PLATFORM_COMMIT: enabled
+      RENOVATE_DRY_RUN: ${{ inputs.dryRun && 'full' || '' }}
+      LOG_LEVEL: ${{ inputs.logLevel || 'info' }}
 
     steps:
       - name: Mint an App installation token
@@ -76,13 +96,43 @@ jobs:
           # reads this input and bumps tag and digest together.
           renovate-image: ghcr.io/renovatebot/renovate:44.222.1@sha256:11492804bf7b54707c658c02f6b0f25fcf8448b5e13d4b549d4df7af04e285e4
           token: ${{ steps.app-token.outputs.token }}
+
+      # Second pass, on request: the run above opened or updated pull requests whose checks have only just started.
+      # Wait for them (a failed check only warns: that pull request stays open), then run again so Renovate merges
+      # the green ones. Needs the list of repositories: waiting on every enrolled one would hold the queue.
+      - name: Wait for the checks of the Renovate pull requests
+        id: wait
+        if: ${{ inputs.secondPass && !inputs.dryRun }}
         env:
-          RENOVATE_AUTODISCOVER: ${{ inputs.repositories == '' && 'true' || 'false' }}
-          RENOVATE_AUTODISCOVER_FILTER: "${{ github.repository_owner }}/*"
-          RENOVATE_REPOSITORIES: ${{ inputs.repositories }}
-          RENOVATE_ONBOARDING: "true"
-          RENOVATE_ONBOARDING_CONFIG: '{"$schema": "https://docs.renovatebot.com/renovate-schema.json", "extends": ["github>${{ github.repository }}"]}'
-          RENOVATE_REQUIRE_CONFIG: required
-          RENOVATE_PLATFORM_COMMIT: enabled
-          RENOVATE_DRY_RUN: ${{ inputs.dryRun && 'full' || '' }}
-          LOG_LEVEL: ${{ inputs.logLevel || 'info' }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          REPOSITORIES: ${{ inputs.repositories }}
+          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
+        run: |
+          set -euo pipefail
+          if [ -z "$REPOSITORIES" ]; then
+            echo "::notice::secondPass needs the repositories input: no second run."
+            exit 0
+          fi
+          again=false
+          IFS=, read -ra repos <<< "$REPOSITORIES"
+          for repo in "${repos[@]}"; do
+            repo="${repo// /}"
+            for pr in $(gh pr list -R "$repo" --author "app/$APP_SLUG" --state open --json number --jq '.[].number'); do
+              again=true
+              # A new head commit has no check for a few seconds: wait until some are registered, two minutes at most.
+              for _ in $(seq 1 12); do
+                sleep 10
+                [ "$(gh pr checks "$pr" -R "$repo" --json name --jq length 2>/dev/null || echo 0)" -gt 0 ] && break
+              done
+              timeout 900 gh pr checks "$pr" -R "$repo" --watch --interval 15 \
+                || echo "::warning::$repo#$pr: checks failed, missing or still running after 15 minutes."
+            done
+          done
+          echo "again=$again" >> "$GITHUB_OUTPUT"
+
+      - name: Run Renovate again
+        if: ${{ steps.wait.outputs.again == 'true' }}
+        uses: renovatebot/github-action@1c0cf989c02653fba0efe7ca5772338860ca71dc # v46.3.12
+        with:
+          renovate-image: ghcr.io/renovatebot/renovate:44.222.1@sha256:11492804bf7b54707c658c02f6b0f25fcf8448b5e13d4b549d4df7af04e285e4
+          token: ${{ steps.app-token.outputs.token }}
