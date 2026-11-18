@@ -1,6 +1,6 @@
 # The one self-hosted Renovate runner of thomas-lg-lab.
 #
-# It runs as the `thomas-lg-renovate` GitHub App (not GITHUB_TOKEN: pull requests opened with the workflow token
+# It runs as the `thomas-lg-lab-renovate` GitHub App (not GITHUB_TOKEN: pull requests opened with the workflow token
 # never trigger other workflows, so required checks would stay pending and nothing could merge). The App token only
 # sees the repositories the App is installed on, and autodiscover takes exactly those: installing the App on a
 # repository is what enrols it. A repository without a renovate.json gets an onboarding PR extending this preset.
