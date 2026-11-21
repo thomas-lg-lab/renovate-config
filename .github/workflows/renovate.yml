@@ -15,8 +15,8 @@
 # write token on every enrolled repository); Renovate keeps the pins and their version comments current.
 #
 # The cron is daily so Dependency Dashboard checkboxes and rebases are picked up quickly; new update PRs are gated
-# to Monday mornings by the schedule in default.json. 01:00 UTC is 02:00 or 03:00 in Paris: three hours of margin
-# for GitHub's scheduled-run delays.
+# to Mondays by the schedule in default.json. The whole day, not an early window: GitHub starts this scheduled run
+# six to eight hours after 01:00 UTC, and a window that closed at 6:00 in Paris was missed every week.
 #
 # Renovate merges a pull request itself (automerge with platformAutomerge off) on the run after the one that saw
 # its checks green, so one run never opens and merges. With `secondPass`, a dispatched run waits for the checks of
