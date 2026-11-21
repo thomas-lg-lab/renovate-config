@@ -5,7 +5,7 @@
     "config:best-practices"
   ],
   "schedule": [
-    "before 6am on monday"
+    "on monday"
   ],
   "timezone": "Europe/Paris",
   "prHourlyLimit": 0,
@@ -34,7 +34,7 @@
   "platformAutomerge": true,
   "lockFileMaintenance": {
     "schedule": [
-      "before 6am on monday"
+      "on monday"
     ],
     "automerge": false,
     "commitMessageAction": "refresh"
